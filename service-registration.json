@@ -1,0 +1,8 @@
+{
+  "vertical": "trade8",
+  "services": [
+    {
+      "service_type": "trade8:bars"
+    }
+  ]
+}
