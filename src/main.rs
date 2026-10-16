@@ -94,7 +94,10 @@ fn extend_router(app: Router<Arc<BarsState>>, _state: Arc<BarsState>) -> Router<
         .route("/v1/admin/eod", get(admin_ui::admin_eod))
         .route(
             "/v1/health",
-            get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:bars"})) }),
+            // Carries the binary's build identity (`version`/`build`,
+            // BUILDID-1) so captain's monitor populates `make status`'s
+            // VERSION column — the consuming BINARY's identity.
+            get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:bars", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
 
