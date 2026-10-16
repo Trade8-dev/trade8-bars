@@ -39,8 +39,8 @@ graph TD
         BUS[sentin8:bus]
         SYS[sentin8:sys audit]
         AUTH[sentin8:auth + Shield]
-        DB[(db trade8 / schema bars)]
-        ST[sentin8:storage<br/>cold tier (designed)]
+        DB["(db trade8 / schema bars)"]
+        ST["sentin8:storage<br/>cold tier (designed)"]
     end
     APP[etrader / Dash RFW]
     FEED -- "SSE trade8:feed:trade:printed (group trade8:bars)" --> CONSUMERS
@@ -87,7 +87,7 @@ sequenceDiagram
     H->>S: verify + require trade8:feed:history:read
     S-->>H: allow / 403
     H->>E: history(symbol, interval) — hot window
-    H->>DB: set context; begin(tx); read_history(from,to,limit)
+    H->>DB: set context, begin(tx), read_history(from,to,limit)
     alt DB unreachable
         H-->>A: hot-window bars only (degraded live view)
     else ok
@@ -111,7 +111,7 @@ sequenceDiagram
     alt none closed
         C-->>B: ACK
     else bars closed
-        C->>DB: set context; begin(tx); persist_bar ×N (merge upsert)
+        C->>DB: set context, begin(tx), persist_bar ×N (merge upsert)
         alt persist fails
             C-->>B: Nack → redelivery (merge keeps it idempotent)
         else ok
