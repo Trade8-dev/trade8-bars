@@ -2,7 +2,11 @@
   "vertical": "trade8",
   "services": [
     {
-      "service_type": "trade8:bars"
+      "service_type": "trade8:bars",
+      "telemetry_property": {
+        "slug": "bars",
+        "name": "Trade8:Bars Telemetry"
+      }
     }
   ]
 }
