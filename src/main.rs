@@ -13,11 +13,6 @@
 
 #![allow(dead_code)]
 
-// Global allocator (design §11 Allocator): mimalloc in every trade8
-// service/worker binary for lower tail latency than the system allocator.
-#[global_allocator]
-static GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 mod admin_ui;
 mod core;
 mod registration;
