@@ -57,6 +57,17 @@ fn card(title: &str, body: &str) -> RemoteWidget {
         actions: vec![],
     })
 }
+#[utoipa::path(
+    get,
+    path = "/v1/admin/ui/{page}",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/ui/{page}` — RFW definitions.
 pub async fn get_admin_ui(
@@ -110,6 +121,17 @@ pub async fn get_admin_ui(
         serde_json::to_value(AdminUiResponse::page(def)).unwrap_or_default(),
     ))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/admin/coverage",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/coverage` — engine intrabar + closed-window coverage.
 pub async fn admin_coverage(
@@ -138,6 +160,17 @@ pub async fn admin_coverage(
         .collect();
     Ok(Json(serde_json::json!(rows)))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/admin/eod",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/eod` — EOD report rows from the DB.
 pub async fn admin_eod(

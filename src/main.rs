@@ -15,6 +15,7 @@
 
 mod admin_ui;
 mod core;
+mod openapi;
 mod registration;
 mod store;
 
@@ -107,10 +108,21 @@ fn parse_interval(s: &str) -> Option<BarInterval> {
         _ => return None,
     })
 }
+#[utoipa::path(
+    get,
+    path = "/v1/bars",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "bars",
+)]
 
 /// History: DB window (source of truth), engine hot window
 /// as fallback; merged + deduped on bucket start.
-async fn query_bars(
+pub(crate) async fn query_bars(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
     Query(q): Query<std::collections::HashMap<String, String>>,
@@ -194,8 +206,19 @@ async fn query_bars(
     let count = bars.len();
     Ok(Json(serde_json::json!({"bars": bars, "count": count})))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/bars/latest",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "bars",
+)]
 
-async fn latest_bars(
+pub(crate) async fn latest_bars(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
@@ -211,7 +234,7 @@ async fn latest_bars(
 }
 
 /// EOD report rows (the API read; the admin page shares the query).
-async fn list_eod(
+pub(crate) async fn list_eod(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
@@ -253,10 +276,21 @@ async fn list_eod(
         }
     ).collect::<Vec<_>>()})))
 }
+#[utoipa::path(
+    post,
+    path = "/v1/eod",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "bars",
+)]
 
 /// EOD finalization (the Cron proxy-back target): close all open
 /// buckets, persist them + the day report, emit `eod:completed`.
-async fn finalize_eod(
+pub(crate) async fn finalize_eod(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
     body: Option<Json<serde_json::Value>>,
