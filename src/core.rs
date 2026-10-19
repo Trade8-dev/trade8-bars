@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Bars
 // SPDX-License-Identifier: Apache-2.0
 
-//! Bars engine — per-(symbol, interval) bucket state machineschines
+//! Bars engine - per-(symbol, interval) bucket state machineschines
 //! with market-clock alignment.
 //!
 //! Design: `../bars/DESIGN.md` §4.
@@ -32,7 +32,7 @@ pub struct BarsEngine {
 
 impl BarsEngine {
     /// Bucket start for a print at market-clock `ts_ms` (session open =
-    /// bucket 0 — bars design §4: market-clock alignment, no wall-clock
+    /// bucket 0 - bars design §4: market-clock alignment, no wall-clock
     /// buckets). Here `session_open_ms` is the market session's open
     /// timestamp; prints before it clamp to bucket 0.
     pub fn bucket_start(ts_ms: u64, session_open_ms: u64, interval: BarInterval) -> u64 {
@@ -41,7 +41,7 @@ impl BarsEngine {
     }
 
     /// Apply a print: updates the open bucket, closes it when the print
-    /// belongs to a later bucket. Returns the closed bar (if any) —
+    /// belongs to a later bucket. Returns the closed bar (if any) -
     /// the `bar:closed` event source.
     pub fn apply_print(
         &self,
@@ -59,7 +59,7 @@ impl BarsEngine {
                     bucket.bar.apply(p);
                 }
                 Some(bucket) => {
-                    // print crossed into a later bucket — close the old.
+                    // print crossed into a later bucket - close the old.
                     let finished = bucket.bar;
                     closed.push(finished);
                     let new_bar = Bar::from_first(p.clone(), interval, start);

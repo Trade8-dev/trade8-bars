@@ -159,7 +159,7 @@ pub mod bars {
     components(schemas()),
     security(),
     tags(
-        (name = "bars", description = "Trade8:Bars — OHLC bar buckets"),
+        (name = "bars", description = "Trade8:Bars - OHLC bar buckets"),
         (name = "trade8-admin", description = "Trade8:Bars admin surface (RFW)"),
         (name = "policy", description = "Shield policy administration (shared surface)"),
     ),

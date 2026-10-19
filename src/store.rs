@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Bars
 // SPDX-License-Identifier: Apache-2.0
 
-//! Bars DB persistence — closed-bar upserts + EOD reportort
+//! Bars DB persistence - closed-bar upserts + EOD reportort
 //! finalization with `bar:closed` / `eod:completed` outbox events.
 
 use std::fmt::Write as _;
@@ -38,7 +38,7 @@ pub async fn persist_bar(
     } else {
         None
     };
-    // Table name is a closed enum match — no injection surface.
+    // Table name is a closed enum match - no injection surface.
     let sql = format!(
         r#"INSERT INTO {table}
            (env_id, symbol_id, bucket_ts, open_px, high_px, low_px, close_px,
@@ -211,7 +211,7 @@ pub async fn read_eod(
     Ok(rows)
 }
 
-/// Outbox insert — drained by the shell's boot-step-8b relay to Bus.
+/// Outbox insert - drained by the shell's boot-step-8b relay to Bus.
 async fn insert_outbox_event(
     conn: &mut PgConnection,
     env_id: Uuid,
@@ -230,11 +230,11 @@ async fn insert_outbox_event(
 }
 
 // ---------------------------------------------------------------------------
-// Cold tier — monthly Storage archives + transparent rehydration.dration.
+// Cold tier - monthly Storage archives + transparent rehydration.dration.
 // ---------------------------------------------------------------------------
 
 /// One monthly archive object's registry entry (stored in
-/// `eod_report.storage_objects` — the object registry).
+/// `eod_report.storage_objects` - the object registry).
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct BarArchiveRef {
     /// Storage object path: `trade8/bars/{env}/{interval}/{yyyy-mm}.ndjson`.
@@ -246,10 +246,10 @@ pub struct BarArchiveRef {
 }
 
 /// Export one (env, interval, month) partition to columnar-ish NDJSON
-/// Returns `(ndjson, rows)` — the caller uploads the NDJSON toSON to
+/// Returns `(ndjson, rows)` - the caller uploads the NDJSON toSON to
 /// Sentin8:Storage at `trade8/bars/{env}/{interval}/{month}.ndjson` and
 /// records the ref via [`record_archives`]. Rows are ordered by
-/// (symbol_id, bucket_ts) — deterministic for checksums.
+/// (symbol_id, bucket_ts) - deterministic for checksums.
 pub async fn export_month_ndjson(
     conn: &mut PgConnection,
     env_id: Uuid,
@@ -258,7 +258,7 @@ pub async fn export_month_ndjson(
 ) -> Result<(String, i64), sqlx::Error> {
     sentin8::shell::set_tenant_context(conn, env_id).await;
     let table = table_for(interval);
-    // Month bounds (UTC — archive granularity; day boundaries ride the
+    // Month bounds (UTC - archive granularity; day boundaries ride the
     // bucket_ts anyway).
     let start = format!("{month}-01");
     let rows: Vec<ArchiveRow> = sqlx::query_as(&format!(
@@ -389,7 +389,7 @@ mod tests {
         cache.get_or_load("1m", "2026-10", || mk(3)).unwrap();
         assert_eq!(cache.len(), 2);
         assert!(cache.get_or_load("1m", "2026-08", || mk(1)).is_some());
-        // 2026-09 was evicted — reload path fires.
+        // 2026-09 was evicted - reload path fires.
         let reloaded = cache.get_or_load("1m", "2026-09", || mk(9)).unwrap();
         assert_eq!(reloaded[0]["i"], 9);
     }

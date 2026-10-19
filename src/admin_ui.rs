@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Bars
 // SPDX-License-Identifier: Apache-2.0
 
-//! Trade8:Bars admin UI — RFW pages + data endpoints.
+//! Trade8:Bars admin UI - RFW pages + data endpoints.
 
 use axum::extract::{Path, Query, State};
 use axum::http::HeaderMap;
@@ -69,7 +69,7 @@ fn card(title: &str, body: &str) -> RemoteWidget {
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/ui/{page}` — RFW definitions.
+/// `GET /v1/admin/ui/{page}` - RFW definitions.
 pub async fn get_admin_ui(
     State(_st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,
@@ -133,7 +133,7 @@ pub async fn get_admin_ui(
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/coverage` — engine intrabar + closed-window coverage.
+/// `GET /v1/admin/coverage` - engine intrabar + closed-window coverage.
 pub async fn admin_coverage(
     State(st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,
@@ -172,7 +172,7 @@ pub async fn admin_coverage(
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/eod` — EOD report rows from the DB.
+/// `GET /v1/admin/eod` - EOD report rows from the DB.
 pub async fn admin_eod(
     State(st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,

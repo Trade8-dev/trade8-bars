@@ -1,4 +1,4 @@
-# Trade8:Bars — Business Requirements & Functionality
+# Trade8:Bars - Business Requirements & Functionality
 
 > Audience: product owners, business analysts, and anyone evaluating what
 > Trade8:Bars **does for the business**. For architecture read `README.md`;
@@ -10,11 +10,11 @@
   aligned to the market session (not wall-clock), built only from actual
   trade prints.
 - Power the **charting experience**: current intraday candles live in
-  memory; history pages from the DB — one API for both.
+  memory; history pages from the DB - one API for both.
 - Provide the **end-of-day record**: finalized daily bars, day reports, and
   (via the designed cold tier) archive objects for long-term ranges.
 - Keep storage honest: bars are rebuildable from prints, so the bar store is
-  a projection — no adjustment math, no manual candles.
+  a projection - no adjustment math, no manual candles.
 
 ## 2. Business Scope (What the Service Provides)
 
@@ -64,15 +64,15 @@
 
 ## 5. Business Rules & Invariants
 
-1. Bars contain only print-derived data — no interpolated or manual candles.
+1. Bars contain only print-derived data - no interpolated or manual candles.
 2. A candle's high never falls, low never rises, volume never shrinks
    (merge semantics make any rewrite idempotent).
 3. Buckets align to the market session, not the UTC wall clock.
 4. Every history query returns deduplicated, chronologically ordered bars.
 5. Daily bars finalize once per trading date; retries converge.
-6. Coarser frames than 1d are client-derived (e.g. 4h from 1h) — the
+6. Coarser frames than 1d are client-derived (e.g. 4h from 1h) - the
    service stays lean.
-7. All price values remain at instrument scale (×10⁴ ints) — never floats.
+7. All price values remain at instrument scale (×10⁴ ints) - never floats.
 
 ## 6. Target-User Roles & Use Cases
 
@@ -123,7 +123,7 @@
 - Which interval set is the true production default (1m/5m/1d today vs
   the full six)?
 - Official open/close policy for sessions with no prints (carry-forward
-  prior close with volume 0 — confirm).
+  prior close with volume 0 - confirm).
 - Long-range SLA: how far back must history queries stay sub-second (cold
   rehydration)?
 - Should bars emit live intrabar updates on the SSE stream (charting

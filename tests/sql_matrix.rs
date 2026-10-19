@@ -207,7 +207,7 @@ async fn persist_bar_upserts_all_intervals() {
     tx.commit().await.unwrap();
 
     // Merge semantics: re-persisting the same bucket updates high/low/
-    // close — no duplicate row.
+    // close - no duplicate row.
     {
         let mut tx = conn.begin().await.unwrap();
         sentin8::shell::set_tenant_context(&mut tx, env_a()).await;
@@ -276,7 +276,7 @@ async fn history_read_window() {
         v
     };
     // The history row is (ts, open, high, low, close, volume,
-    // print_count) — the close rides index 4.
+    // print_count) - the close rides index 4.
     assert_eq!(rows.len(), 2, "from-filter excludes the first bucket");
     assert_eq!(rows[0].4, 100_200, "close of the from-bucket");
     assert_eq!(rows[1].4, 100_300);

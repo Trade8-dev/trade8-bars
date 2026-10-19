@@ -1,4 +1,4 @@
-# Trade8:Bars — Detailed Design Document
+# Trade8:Bars - Detailed Design Document
 
 > Audience: maintainers, reviewers, and architects modifying the service.
 > Overview in `README.md`; business functionality in `BUSINESS.md`.
@@ -73,7 +73,7 @@ graph TD
     end
 ```
 
-### Request lifecycle — history query family
+### Request lifecycle - history query family
 
 ```mermaid
 sequenceDiagram
@@ -86,7 +86,7 @@ sequenceDiagram
     A->>H: ?symbol&interval&from&to&limit
     H->>S: verify + require trade8:feed:history:read
     S-->>H: allow / 403
-    H->>E: history(symbol, interval) — hot window
+    H->>E: history(symbol, interval) - hot window
     H->>DB: set context, begin(tx), read_history(from,to,limit)
     alt DB unreachable
         H-->>A: hot-window bars only (degraded live view)
@@ -95,7 +95,7 @@ sequenceDiagram
     end
 ```
 
-### Consumer lifecycle — print → buckets → closed bar → persist
+### Consumer lifecycle - print → buckets → closed bar → persist
 
 ```mermaid
 sequenceDiagram
@@ -170,7 +170,7 @@ erDiagram
   bar_1s INCLUDING ALL)`; `bar_1d` adds vwap + official open/close.
 - PK (env, symbol, bucket_ts); the store's upsert merges high/low and
   accumulates volume/print_count (idempotent under redelivery).
-- `eod_report.storage_objects` — references to cold-tier Storage objects
+- `eod_report.storage_objects` - references to cold-tier Storage objects
   (`trade8/bars/{env}/{symbol}/{interval}/{month}` columnar batches,
   designed archive path).
 
@@ -206,17 +206,17 @@ Plus the shared Shield policy-admin API block.
 
 ## 5. Cross-Cutting Concerns
 
-- **AuthN/AuthZ** — 8-step pipeline; Shield targets
+- **AuthN/AuthZ** - 8-step pipeline; Shield targets
   `trade8:feed:history:read` / `trade8:report:eod:read` (bars shares the
-  feed's history scope by design — chart entitlement == history entitlement).
-- **Tenant + RLS** — `set_tenant_context` + `begin()` on every DB leg;
+  feed's history scope by design - chart entitlement == history entitlement).
+- **Tenant + RLS** - `set_tenant_context` + `begin()` on every DB leg;
   explicit env filters; no cross-schema access (bars is self-contained).
-- **Idempotency** — bar upserts merge (idempotent under redelivery);
+- **Idempotency** - bar upserts merge (idempotent under redelivery);
   outbox rows keyed by row id; EOD finalize is idempotent per date.
-- **Audit journaling** — same-tx audit rows; Sys ingest with retry.
-- **TLS/M2M** — post-quantum TLS; cert-bound consumer workloads
+- **Audit journaling** - same-tx audit rows; Sys ingest with retry.
+- **TLS/M2M** - post-quantum TLS; cert-bound consumer workloads
   (`trade8:bars`, `-admin/-policy/-tls` grants).
-- **Scheduling** — EOD finalize registered via `sentin8::client::cron`
+- **Scheduling** - EOD finalize registered via `sentin8::client::cron`
   (`15 16 * * 1-5` → `POST /v1/eod`).
 
 ## 6. Failure Modes & Recovery
@@ -243,7 +243,7 @@ flowchart TD
   day completes on retry; the report upserts by date.
 - **Restart** → DB history is authoritative; the hot window re-warms from
   live prints (closed bars already durable).
-- **Print burst → backpressure** — the engine holds open buckets in memory;
+- **Print burst → backpressure** - the engine holds open buckets in memory;
   closed-bar persistence batches per print batch. The broadcast consumer
   logs `Lagged` (demo path); the bus consumer redelivers from the stream.
 
@@ -264,19 +264,19 @@ graph LR
   is O(intervals) per print with pure numeric updates.
 - Latency harness (`main.rs`): 10k-print roll-up budget; CI headroom
   asserted, design numbers release-measured.
-- Pool: two short tx paths (bar persist, history read) — capped pool.
+- Pool: two short tx paths (bar persist, history read) - capped pool.
 - Backpressure: bounded broadcast channel for the demo fan-out; the bus
   consumer relies on stream redelivery.
 
 ## 8. Invariants, Insecure-Defaults Rejected, Unsafe Rationale
 
-1. Bars derive only from prints — no manual adjustment path exists in the
+1. Bars derive only from prints - no manual adjustment path exists in the
    service (corporate actions are another vertical's domain).
 2. A bucket's OHLCV merges monotonically (high only rises, low only falls,
-   volume accumulates) — idempotent rewrites.
+   volume accumulates) - idempotent rewrites.
 3. History responses never contain duplicate buckets; the hot window wins
    on conflict.
-4. All prices/volumes are integers (×10⁴ prices) — no float in the bar
+4. All prices/volumes are integers (×10⁴ prices) - no float in the bar
    path; `bar_1d.vwap` at money scale.
 5. The EOD report is written once per (env, date) (upsert semantics).
 6. No `unsafe` blocks.
@@ -305,7 +305,7 @@ graph TD
 - Per-env active-interval configuration (1m/5m/1d fixed today).
 - Official open/close policy for no-print sessions.
 - Registration declares `/v1/admin/bars` (implemented as `/v1/admin/coverage`)
-  — align the declaration.
+  - align the declaration.
 
 ---
 

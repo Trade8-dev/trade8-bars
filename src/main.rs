@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Bars
 // SPDX-License-Identifier: Apache-2.0
 
-//! Trade8:Bars service binary — OHLCV aggregation + history + EOD.
+//! Trade8:Bars service binary - OHLCV aggregation + history + EOD.
 //!
 //! Design: `../bars/DESIGN.md`.
 //! Closed bars upsert into the interval tables + `bar:closed` outbox
@@ -92,7 +92,7 @@ fn extend_router(app: Router<Arc<BarsState>>, _state: Arc<BarsState>) -> Router<
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
             // BUILDID-1) so captain's monitor populates `make status`'s
-            // VERSION column — the consuming BINARY's identity.
+            // VERSION column - the consuming BINARY's identity.
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:bars", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
@@ -160,7 +160,7 @@ pub(crate) async fn query_bars(
         .get("to")
         .and_then(|v| chrono::DateTime::parse_from_rfc3339(v).ok())
         .map(|d| d.with_timezone(&chrono::Utc));
-    // Hot window (live bars) — always fresh in the engine.
+    // Hot window (live bars) - always fresh in the engine.
     let hot = st.engine.history(symbol, interval);
     let mut bars: Vec<serde_json::Value> = hot
         .iter()
@@ -169,12 +169,12 @@ pub(crate) async fn query_bars(
     // DB window (persisted history).
     if let Ok(mut conn) = st.core.pool.acquire().await {
         sentin8::shell::set_tenant_context(&mut conn, env).await;
-        // RLS context is transaction-local (DESIGN.md §5) —
+        // RLS context is transaction-local (DESIGN.md §5) -
         // begin() pins the tenant context to the SAME tx as the DML/reads.
         let mut tx = match conn.begin().await {
             Ok(t) => t,
             Err(e) => {
-                tracing::warn!(error = %e, "bars: tenant tx begin failed — retry next tick");
+                tracing::warn!(error = %e, "bars: tenant tx begin failed - retry next tick");
                 return Err(sentin8::shell::err_db(e));
             }
         };
@@ -254,12 +254,12 @@ pub(crate) async fn list_eod(
         .await
         .map_err(sentin8::shell::err_db)?;
     sentin8::shell::set_tenant_context(&mut conn, env).await;
-    // RLS context is transaction-local (DESIGN.md §5) —
+    // RLS context is transaction-local (DESIGN.md §5) -
     // begin() pins the tenant context to the SAME tx as the DML/reads.
     let mut tx = match conn.begin().await {
         Ok(t) => t,
         Err(e) => {
-            tracing::warn!(error = %e, "bars: tenant tx begin failed — retry next tick");
+            tracing::warn!(error = %e, "bars: tenant tx begin failed - retry next tick");
             return Err(sentin8::shell::err_db(e));
         }
     };
@@ -296,7 +296,7 @@ pub(crate) async fn finalize_eod(
     body: Option<Json<serde_json::Value>>,
 ) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
-    // The Cron EOD proxy-back. Step 5 — Shield
+    // The Cron EOD proxy-back. Step 5 - Shield
     // decides (the mirror permits the eod-read action for cron-run scopes).
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -318,12 +318,12 @@ pub(crate) async fn finalize_eod(
     let mut prints = 0i64;
     if let Ok(mut conn) = st.core.pool.acquire().await {
         sentin8::shell::set_tenant_context(&mut conn, env).await;
-        // RLS context is transaction-local (DESIGN.md §5) —
+        // RLS context is transaction-local (DESIGN.md §5) -
         // begin() pins the tenant context to the SAME tx as the DML/reads.
         let mut tx = match conn.begin().await {
             Ok(t) => t,
             Err(e) => {
-                tracing::warn!(error = %e, "bars: tenant tx begin failed — retry next tick");
+                tracing::warn!(error = %e, "bars: tenant tx begin failed - retry next tick");
                 return Err(sentin8::shell::err_db(e));
             }
         };
@@ -370,12 +370,12 @@ async fn run_print_consumer(
                 if !closed.is_empty() {
                     if let Ok(mut conn) = state.core.pool.acquire().await {
                         sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-                        // RLS context is transaction-local (DESIGN.md §5) —
+                        // RLS context is transaction-local (DESIGN.md §5) -
                         // begin() pins the tenant context to the SAME tx as the DML/reads.
                         let mut tx = match conn.begin().await {
                             Ok(t) => t,
                             Err(e) => {
-                                tracing::warn!(error = %e, "bars: persist tx begin failed — retry next tick");
+                                tracing::warn!(error = %e, "bars: persist tx begin failed - retry next tick");
                                 return;
                             }
                         };
@@ -405,7 +405,7 @@ async fn main() -> anyhow::Result<()> {
                 let engine = core::BarsEngine::default();
                 let (tx, _) = tokio::sync::broadcast::channel(1024);
                 let state = Arc::new(BarsState { core, engine, tx });
-                // Boot pass: default interval set (1m/5m/1d — the hot
+                // Boot pass: default interval set (1m/5m/1d - the hot
                 // consumer; configurable via TRADE8_BARS_INTERVALS later).
                 let intervals = vec![BarInterval::M1, BarInterval::M5, BarInterval::D1];
                 if let Ok(env_slug) = std::env::var("TRADE8_BARS_ENV") {
@@ -424,7 +424,7 @@ async fn main() -> anyhow::Result<()> {
                     tokio::spawn(async move {
                         // Cert-presenting Bus client (CERTFREE-4V): the
                         // `trade8:bars` workload CERTIFICATE is the
-                        // identity — no DCR, no token; the mint retries
+                        // identity - no DCR, no token; the mint retries
                         // while the fleet boots.
                         let bus = loop {
                             match sentin8::bus::client::BusClient::for_workload(
@@ -477,11 +477,11 @@ async fn main() -> anyhow::Result<()> {
                                         return trade8::client::HandleOutcome::Nack;
                                     };
                                     sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-                                    // RLS context is transaction-local (DESIGN.md §5) —
+                                    // RLS context is transaction-local (DESIGN.md §5) -
                                     // begin() pins the tenant context to the SAME tx as the DML/reads.
                                     let mut tx = match conn.begin().await {
                                         Ok(t) => t,
-                                        Err(e) => { tracing::warn!(error = %e, "bars: consumer tx begin failed — nack"); return trade8::client::HandleOutcome::Nack; }
+                                        Err(e) => { tracing::warn!(error = %e, "bars: consumer tx begin failed - nack"); return trade8::client::HandleOutcome::Nack; }
                                     };
                                     for bar in &closed {
                                         if store::persist_bar(&mut tx, env_id, bar).await.is_err()
@@ -517,7 +517,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 // ---------------------------------------------------------------------------
-// Latency harness — bars roll-up budget (10k prints < 500ms CI
+// Latency harness - bars roll-up budget (10k prints < 500ms CI
 // headroom; the 100ms design number is measured release-mode).
 // ---------------------------------------------------------------------------
 

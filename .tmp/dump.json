@@ -734,7 +734,7 @@
   "tags": [
     {
       "name": "bars",
-      "description": "Trade8:Bars — OHLC bar buckets"
+      "description": "Trade8:Bars - OHLC bar buckets"
     },
     {
       "name": "trade8-admin",

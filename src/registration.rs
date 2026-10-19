@@ -15,19 +15,19 @@ use sentin8::registration::{
     RelationDecl, SqlMigration,
 };
 
-/// The Shield text of the declared scope-mirror set — public so the
+/// The Shield text of the declared scope-mirror set - public so the
 /// policy wiring tests assert against the REAL seed.
 pub const SCOPE_MIRROR_POLICIES: &str = "permit(principal, action == Action::\"trade8:feed:history:read\", resource) when { principal.scopes.contains(\"trade8:feed:history:read\") };\npermit(principal, action == Action::\"trade8:feed:history:read\", resource) when { principal.scopes.contains(\"trade8:feed:quote:read\") };\npermit(principal, action == Action::\"trade8:feed:history:read\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"trade8:feed:history:read\", resource) when { principal.scopes.contains(\"sentin8:sys:org:admin\") };\npermit(principal, action == Action::\"trade8:feed:history:read\", resource) when { principal.scopes.contains(\"sentin8:sys:env:admin\") };\npermit(principal, action == Action::\"trade8:report:eod:read\", resource) when { principal.scopes.contains(\"trade8:report:eod:read\") };\npermit(principal, action == Action::\"trade8:report:eod:read\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"trade8:report:eod:read\", resource) when { principal.scopes.contains(\"sentin8:sys:org:admin\") };\npermit(principal, action == Action::\"trade8:report:eod:read\", resource) when { principal.scopes.contains(\"sentin8:sys:env:admin\") };";
 
 /// Default declarative policy set (Sentin8:Policy design §3.2/§3.4,
 /// seeded by `vertical enroll` as `origin='platform'`, `mode='enforced'`):
-/// action-granular scope permits over the LIVE effective scope set — the
+/// action-granular scope permits over the LIVE effective scope set - the
 /// exact mirror of the gates this service's handlers evaluate in step 5
 /// (policy design §4.3). Enforced: step 5 is the
 /// only gate; shadow is the emergency one-UPDATE rollback lever only.
 const POLICIES: &[PolicySetDecl] = &[PolicySetDecl {
     policy_set_name: "scope-mirror",
-    description: "Action-granular scope permits for trade8:bars over the LIVE effective scope set (design §3.1d). Enforced — step 5 is the only gate.",
+    description: "Action-granular scope permits for trade8:bars over the LIVE effective scope set (design §3.1d). Enforced - step 5 is the only gate.",
     // Shield text lives in SCOPE_MIRROR_POLICIES (single source).
     policies: SCOPE_MIRROR_POLICIES,
     schema: None,
@@ -35,7 +35,7 @@ const POLICIES: &[PolicySetDecl] = &[PolicySetDecl {
     default_enabled: true,
 }];
 
-/// Default ReBAC relation tuples (design §3.1c) — none declared by this
+/// Default ReBAC relation tuples (design §3.1c) - none declared by this
 /// service today; env admins author their own graph (office/trader,
 /// entitlement edges) via the relations admin API.
 const RELATIONS: &[RelationDecl] = &[];
@@ -45,7 +45,7 @@ const PG_ROLES: &[PgRole] = &[PgRole {
     role: "trade8_bars_service",
     bypass_rls: false,
     database: "trade8",
-    // Owns all its reads — no cross-schema grants.
+    // Owns all its reads - no cross-schema grants.
     cross_schema_grants: &[],
 }];
 
@@ -118,13 +118,13 @@ const ADMIN_UI_PAGES: &[AdminUiPage] = &[
 ];
 
 /// Workload scope grants (self-registration design §3.11). One
-/// entry per workload this service presents a certificate for — the
+/// entry per workload this service presents a certificate for - the
 /// fail-closed registry map admits only these. Scope values use the
 /// full vocabulary form (bare `bus:consume` fails the map's superset
 /// check).
 const M2M_GRANTS: &[M2mGrant] = &[
     // The service's own workload identity: the shell 8b outbox relay +
-    // the direct callers. Colon + short spellings both granted — the
+    // the direct callers. Colon + short spellings both granted - the
     // registry map looks up the exact workload name each call site
     // presents a certificate for.
     M2mGrant {
@@ -159,7 +159,7 @@ const M2M_GRANTS: &[M2mGrant] = &[
         scopes: &["sentin8:stat:measure"],
     },
     // TLS-RLS-4 (VDC §VDC.7): the database-free HostContextResolver's
-    // resolve workload — cache miss calls Sys `GET /v1/resolve/hostname`.
+    // resolve workload - cache miss calls Sys `GET /v1/resolve/hostname`.
     M2mGrant {
         workload: "trade8-bars-tls",
         scopes: &["sentin8:sys:instances:read"],
