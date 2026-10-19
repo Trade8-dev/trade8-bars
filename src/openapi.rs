@@ -12,6 +12,8 @@
 //! (`sentin8/design/sentin8-openapi-coverage-design.md` §2). The service
 //! exposes `GET /openapi.json` via the shell's OpenAPI route.
 
+use crate::admin_ui::AdminCoverageRow;
+use crate::{BarsResponse, EodFinalizeAck, EodFinalizeRequest, EodRow, EodRows, IntrabarResponse};
 use utoipa::OpenApi;
 
 /// Spec-only wrappers for the binary's route handlers (OAPEC §2).
@@ -27,7 +29,7 @@ pub mod bars {
         get,
         path = "/v1/health",
         responses(
-            (status = 200, description = "Service is healthy", body = serde_json::Value),
+            (status = 200, description = "Service is healthy", body = crate::HealthInfo),
         ),
         security(),
         tag = "bars",
@@ -39,7 +41,7 @@ pub mod bars {
         get,
         path = "/v1/bars",
         responses(
-            (status = 200, description = "Bar buckets", body = serde_json::Value),
+            (status = 200, description = "Bar buckets", body = crate::BarsResponse),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -52,7 +54,7 @@ pub mod bars {
         get,
         path = "/v1/bars/latest",
         responses(
-            (status = 200, description = "Latest bucket per series", body = serde_json::Value),
+            (status = 200, description = "Latest bucket per series", body = crate::IntrabarResponse),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -65,7 +67,7 @@ pub mod bars {
         get,
         path = "/v1/eod",
         responses(
-            (status = 200, description = "EOD sessions", body = serde_json::Value),
+            (status = 200, description = "EOD sessions", body = crate::EodRows),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -77,9 +79,9 @@ pub mod bars {
     #[utoipa::path(
         post,
         path = "/v1/eod",
-        request_body = serde_json::Value,
+        request_body = crate::EodFinalizeRequest,
         responses(
-            (status = 200, description = "Session finalized", body = serde_json::Value),
+            (status = 200, description = "Session finalized", body = crate::EodFinalizeAck),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -91,9 +93,9 @@ pub mod bars {
     #[utoipa::path(
         get,
         path = "/v1/admin/ui/{page}",
-        params(("page" = String, Path, description = "RFW page id")),
+        params(("page" = String, Path, description = "Admin page slug")),
         responses(
-            (status = 200, description = "RFW page definition", body = serde_json::Value),
+            (status = 200, description = "RFW page definition", body = sentin8::rfw::AdminUiResponse),
             (status = 404, description = "Unknown page"),
         ),
         security(),
@@ -106,7 +108,7 @@ pub mod bars {
         get,
         path = "/v1/admin/coverage",
         responses(
-            (status = 200, description = "Coverage rows", body = serde_json::Value),
+            (status = 200, description = "Coverage rows", body = Vec<crate::admin_ui::AdminCoverageRow>),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -119,7 +121,7 @@ pub mod bars {
         get,
         path = "/v1/admin/eod",
         responses(
-            (status = 200, description = "EOD admin rows", body = serde_json::Value),
+            (status = 200, description = "EOD admin rows", body = Vec<crate::EodRow>),
             (status = 403, description = "Forbidden"),
         ),
         security(),
@@ -156,7 +158,17 @@ pub mod bars {
         sentin8::shell::policy_put_attribute,
         sentin8::shell::policy_delete_attribute,
     ),
-    components(schemas()),
+    components(schemas(
+        BarsResponse,
+        IntrabarResponse,
+        EodRow,
+        EodRows,
+        EodFinalizeRequest,
+        EodFinalizeAck,
+        AdminCoverageRow,
+        sentin8::rfw::AdminUiResponse,
+        sentin8::rfw::policy_pages::AdminDataRows,
+    )),
     security(),
     tags(
         (name = "bars", description = "Trade8:Bars - OHLC bar buckets"),

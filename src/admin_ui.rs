@@ -61,7 +61,7 @@ fn card(title: &str, body: &str) -> RemoteWidget {
     get,
     path = "/v1/admin/ui/{page}",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = sentin8::rfw::AdminUiResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -74,7 +74,7 @@ pub async fn get_admin_ui(
     State(_st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,
     Path(page): Path<String>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<AdminUiResponse>, (axum::http::StatusCode, String)> {
     let _a = sentin8::shell::verify_token(&_st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &_st.core.admin.policy,
@@ -117,15 +117,27 @@ pub async fn get_admin_ui(
             ))
         }
     };
-    Ok(Json(
-        serde_json::to_value(AdminUiResponse::page(def)).unwrap_or_default(),
-    ))
+    Ok(Json(AdminUiResponse::page(def)))
 }
+/// Coverage row for the bars admin page (OAPEC-9 typed body).
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct AdminCoverageRow {
+    /// The symbol id.
+    pub symbol_id: uuid::Uuid,
+    /// The bar interval.
+    pub interval: String,
+    /// Live open buckets.
+    pub buckets: i32,
+    /// The latest close (raw ticks, decimal-as-text for i128).
+    pub latest_close: String,
+}
+
+
 #[utoipa::path(
     get,
     path = "/v1/admin/coverage",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "Coverage rows", body = Vec<AdminCoverageRow>),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -137,7 +149,7 @@ pub async fn get_admin_ui(
 pub async fn admin_coverage(
     State(st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<Vec<AdminCoverageRow>>, (axum::http::StatusCode, String)> {
     let _a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -147,24 +159,22 @@ pub async fn admin_coverage(
     )
     .await?;
     let intrabar = st.engine.intrabar();
-    let rows: Vec<_> = intrabar
+    let rows: Vec<AdminCoverageRow> = intrabar
         .iter()
-        .map(|b| {
-            serde_json::json!({
-                "symbol_id": b.symbol_id,
-                "interval": b.interval.as_str(),
-                "buckets": 1, // open bucket (live)
-                "latest_close": b.close.raw,
-            })
+        .map(|b| AdminCoverageRow {
+            symbol_id: b.symbol_id,
+            interval: b.interval.as_str().to_string(),
+            buckets: 1, // open bucket (live)
+            latest_close: b.close.raw.to_string(),
         })
         .collect();
-    Ok(Json(serde_json::json!(rows)))
+    Ok(Json(rows))
 }
 #[utoipa::path(
     get,
     path = "/v1/admin/eod",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "EOD admin rows", body = Vec<crate::EodRow>),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -177,7 +187,7 @@ pub async fn admin_eod(
     State(st): State<std::sync::Arc<BarsState>>,
     headers: HeaderMap,
     Query(q): Query<std::collections::HashMap<String, String>>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<Vec<crate::EodRow>>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -202,13 +212,13 @@ pub async fn admin_eod(
     let rows = crate::store::read_eod(&mut conn, env, limit)
         .await
         .map_err(sentin8::shell::err_db)?;
-    Ok(Json(serde_json::json!(rows
+    Ok(Json(rows
         .into_iter()
-        .map(|(trading_date, prints, symbols_active, completed_at)| {
-            serde_json::json!({
-                "trading_date": trading_date, "prints": prints,
-                "symbols_active": symbols_active, "completed_at": completed_at,
-            })
+        .map(|(trading_date, prints, symbols_active, completed_at)| crate::EodRow {
+            trading_date,
+            prints,
+            symbols_active,
+            completed_at,
         })
-        .collect::<Vec<_>>())))
+        .collect::<Vec<_>>()))
 }

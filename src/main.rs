@@ -108,11 +108,81 @@ fn parse_interval(s: &str) -> Option<BarInterval> {
         _ => return None,
     })
 }
+// ── Typed response DTOs (OAPEC-9) ──────────────────────────────────────
+
+/// Liveness/build identity (OAPEC-9 typed body).
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct HealthInfo {
+    /// Always `ok` while serving.
+    pub status: String,
+    /// The service identifier.
+    pub service: String,
+    /// The build version.
+    pub version: String,
+    /// The build hash.
+    pub build: String,
+}
+
+/// Bar-bucket query envelope.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct BarsResponse {
+    /// The buckets (live engine bars + persisted history).
+    pub bars: Vec<serde_json::Value>,
+    /// The bucket count (convenience for pagers).
+    pub count: i64,
+}
+
+/// Intrabar (latest-per-series) envelope.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct IntrabarResponse {
+    /// The latest bucket per series.
+    pub intrabar: Vec<trade8::contracts::Bar>,
+}
+
+/// One EOD report row.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct EodRow {
+    /// The trading date (`YYYY-MM-DD`).
+    pub trading_date: chrono::NaiveDate,
+    /// Total prints rolled up.
+    pub prints: i64,
+    /// Distinct symbols traded.
+    pub symbols_active: i32,
+    /// When the session was finalized.
+    pub completed_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+/// EOD report list envelope.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct EodRows {
+    /// The report rows.
+    pub eod: Vec<EodRow>,
+}
+
+/// EOD finalize request (Cron proxy-back).
+#[derive(Debug, serde::Deserialize, Default, utoipa::ToSchema)]
+pub struct EodFinalizeRequest {
+    /// The date to close (`YYYY-MM-DD`); defaults to today.
+    #[serde(default)]
+    pub date: Option<String>,
+}
+
+/// EOD finalize acknowledgement.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct EodFinalizeAck {
+    /// Buckets closed in the engine.
+    pub closed: usize,
+    /// Buckets persisted to the store.
+    pub persisted: usize,
+    /// The finalized date.
+    pub date: String,
+}
+
 #[utoipa::path(
     get,
     path = "/v1/bars",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "Bar buckets", body = BarsResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -126,7 +196,7 @@ pub(crate) async fn query_bars(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
     Query(q): Query<std::collections::HashMap<String, String>>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<BarsResponse>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -204,13 +274,13 @@ pub(crate) async fn query_bars(
             .unwrap_or(0)
     });
     let count = bars.len();
-    Ok(Json(serde_json::json!({"bars": bars, "count": count})))
+    Ok(Json(BarsResponse { bars, count: count as i64 }))
 }
 #[utoipa::path(
     get,
     path = "/v1/bars/latest",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "Latest bucket per series", body = IntrabarResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -221,7 +291,7 @@ pub(crate) async fn query_bars(
 pub(crate) async fn latest_bars(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<IntrabarResponse>, (axum::http::StatusCode, String)> {
     let _a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -230,14 +300,14 @@ pub(crate) async fn latest_bars(
         sentin8::shield::EvalTarget::new("trade8:feed:history:read"),
     )
     .await?;
-    Ok(Json(serde_json::json!({"intrabar": st.engine.intrabar()})))
+    Ok(Json(IntrabarResponse { intrabar: st.engine.intrabar() }))
 }
 
 /// EOD report rows (the API read; the admin page shares the query).
 pub(crate) async fn list_eod(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<EodRows>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -267,20 +337,23 @@ pub(crate) async fn list_eod(
         .await
         .map_err(sentin8::shell::err_db)?;
     tx.commit().await.ok(); // dropping an uncommitted tx rolls back
-    Ok(Json(serde_json::json!({"eod": rows.into_iter().map(
-        |(trading_date, prints, symbols_active, completed_at)| {
-            serde_json::json!({
-                "trading_date": trading_date, "prints": prints,
-                "symbols_active": symbols_active, "completed_at": completed_at,
+    Ok(Json(EodRows {
+        eod: rows
+            .into_iter()
+            .map(|(trading_date, prints, symbols_active, completed_at)| EodRow {
+                trading_date,
+                prints,
+                symbols_active,
+                completed_at,
             })
-        }
-    ).collect::<Vec<_>>()})))
+            .collect(),
+    }))
 }
 #[utoipa::path(
     post,
     path = "/v1/eod",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "EOD sessions", body = EodRows),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -293,8 +366,8 @@ pub(crate) async fn list_eod(
 pub(crate) async fn finalize_eod(
     State(st): State<Arc<BarsState>>,
     headers: axum::http::HeaderMap,
-    body: Option<Json<serde_json::Value>>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+    body: Option<Json<EodFinalizeRequest>>,
+) -> Result<Json<EodFinalizeAck>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     // The Cron EOD proxy-back. Step 5 - Shield
     // decides (the mirror permits the eod-read action for cron-run scopes).
@@ -308,9 +381,8 @@ pub(crate) async fn finalize_eod(
     let env = a.env_id();
     let date = body
         .as_ref()
-        .and_then(|Json(b)| b.get("date"))
-        .and_then(|v| v.as_str())
-        .and_then(|s| chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok())
+        .and_then(|Json(b)| b.date.clone())
+        .and_then(|s| chrono::NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok())
         .unwrap_or_else(|| chrono::Utc::now().date_naive());
     // Close every open bucket (carry-forward policy is per-config).
     let closed = st.engine.close_all();
@@ -342,9 +414,11 @@ pub(crate) async fn finalize_eod(
         tx.commit().await.ok(); // dropping an uncommitted tx rolls back
     }
     tracing::info!(date = %date, closed = closed.len(), persisted, "EOD finalized");
-    Ok(Json(serde_json::json!({
-        "closed": closed.len(), "persisted": persisted, "date": date,
-    })))
+    Ok(Json(EodFinalizeAck {
+        closed: closed.len(),
+        persisted,
+        date: date.to_string(),
+    }))
 }
 
 /// The print consumer (demo path): subscribes to the feed broadcast and rolls
