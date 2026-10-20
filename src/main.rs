@@ -274,7 +274,10 @@ pub(crate) async fn query_bars(
             .unwrap_or(0)
     });
     let count = bars.len();
-    Ok(Json(BarsResponse { bars, count: count as i64 }))
+    Ok(Json(BarsResponse {
+        bars,
+        count: count as i64,
+    }))
 }
 #[utoipa::path(
     get,
@@ -300,7 +303,9 @@ pub(crate) async fn latest_bars(
         sentin8::shield::EvalTarget::new("trade8:feed:history:read"),
     )
     .await?;
-    Ok(Json(IntrabarResponse { intrabar: st.engine.intrabar() }))
+    Ok(Json(IntrabarResponse {
+        intrabar: st.engine.intrabar(),
+    }))
 }
 
 /// EOD report rows (the API read; the admin page shares the query).
@@ -340,12 +345,14 @@ pub(crate) async fn list_eod(
     Ok(Json(EodRows {
         eod: rows
             .into_iter()
-            .map(|(trading_date, prints, symbols_active, completed_at)| EodRow {
-                trading_date,
-                prints,
-                symbols_active,
-                completed_at,
-            })
+            .map(
+                |(trading_date, prints, symbols_active, completed_at)| EodRow {
+                    trading_date,
+                    prints,
+                    symbols_active,
+                    completed_at,
+                },
+            )
             .collect(),
     }))
 }

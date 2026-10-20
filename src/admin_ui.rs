@@ -132,7 +132,6 @@ pub struct AdminCoverageRow {
     pub latest_close: String,
 }
 
-
 #[utoipa::path(
     get,
     path = "/v1/admin/coverage",
@@ -212,13 +211,16 @@ pub async fn admin_eod(
     let rows = crate::store::read_eod(&mut conn, env, limit)
         .await
         .map_err(sentin8::shell::err_db)?;
-    Ok(Json(rows
-        .into_iter()
-        .map(|(trading_date, prints, symbols_active, completed_at)| crate::EodRow {
-            trading_date,
-            prints,
-            symbols_active,
-            completed_at,
-        })
-        .collect::<Vec<_>>()))
+    Ok(Json(
+        rows.into_iter()
+            .map(
+                |(trading_date, prints, symbols_active, completed_at)| crate::EodRow {
+                    trading_date,
+                    prints,
+                    symbols_active,
+                    completed_at,
+                },
+            )
+            .collect::<Vec<_>>(),
+    ))
 }
