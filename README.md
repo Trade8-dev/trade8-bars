@@ -1,8 +1,13 @@
-# README.md: Trade8:Bars - OHLCV Bar Aggregation Service
+# Trade8:Bars - OHLCV Bar Aggregation Service
 
 > Audience: anyone evaluating or onboarding to the service. For the
 > wire-level construction read `DESIGN.md`; for business functionality read
 > `BUSINESS.md`. Vertical context: the top-level `DESIGN.md`
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../../LICENSE)
+[![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange.svg)](https://www.rust-lang.org/)
+[![Docs](https://img.shields.io/badge/docs/read-3aa757.svg)](https://trade8.dev/docs/products/bars)
+[![Website](https://img.shields.io/badge/website-trade8.dev-1a73e8.svg)](https://trade8.dev)
 > (system map) and `BUSINESS.md` (business view).
 
 ## 1. Summary
