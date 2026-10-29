@@ -119,7 +119,7 @@ pub async fn get_admin_ui(
     };
     Ok(Json(AdminUiResponse::page(def)))
 }
-/// Coverage row for the bars admin page (OAPEC-9 typed body).
+/// Coverage row for the bars admin page (typed body).
 #[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct AdminCoverageRow {
     /// The symbol id.

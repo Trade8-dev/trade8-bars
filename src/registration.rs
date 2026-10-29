@@ -158,7 +158,7 @@ const M2M_GRANTS: &[M2mGrant] = &[
         workload: "bars-policy",
         scopes: &["sentin8:stat:measure"],
     },
-    // TLS-RLS-4 (VDC §VDC.7): the database-free HostContextResolver's
+    // (VDC §VDC.7): the database-free HostContextResolver's
     // resolve workload - cache miss calls Sys `GET /v1/resolve/hostname`.
     M2mGrant {
         workload: "trade8-bars-tls",

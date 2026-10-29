@@ -229,9 +229,9 @@ async fn insert_outbox_event(
     Ok(())
 }
 
-// ---------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 // Cold tier - monthly Storage archives + transparent rehydration.dration.
-// ---------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
 /// One monthly archive object's registry entry (stored in
 /// `eod_report.storage_objects` - the object registry).

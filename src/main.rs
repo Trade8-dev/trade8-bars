@@ -91,7 +91,7 @@ fn extend_router(app: Router<Arc<BarsState>>, _state: Arc<BarsState>) -> Router<
         .route(
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
-            // BUILDID-1) so captain's monitor populates `make status`'s
+            //) so captain's monitor populates `make status`'s
             // VERSION column - the consuming BINARY's identity.
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:bars", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
@@ -108,9 +108,9 @@ fn parse_interval(s: &str) -> Option<BarInterval> {
         _ => return None,
     })
 }
-// ── Typed response DTOs (OAPEC-9) ──────────────────────────────────────
+// ── Typed response DTOs ──────────────────────────────────────
 
-/// Liveness/build identity (OAPEC-9 typed body).
+/// Liveness/build identity (typed body).
 #[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct HealthInfo {
     /// Always `ok` while serving.
@@ -597,10 +597,10 @@ async fn main() -> anyhow::Result<()> {
     .await
 }
 
-// ---------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 // Latency harness - bars roll-up budget (10k prints < 500ms CI
 // headroom; the 100ms design number is measured release-mode).
-// ---------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
 /// Shared policy-admin surface accessor: the shell boot
 /// loaded the engine into `core.admin`; the shared handlers extract it via
