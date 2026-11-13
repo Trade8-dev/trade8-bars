@@ -6090,8 +6090,8 @@ dependencies = [
 
 [[package]]
 name = "trade8"
-version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+version = "1.0.0"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "trade8-client",
  "trade8-contracts",
@@ -6124,7 +6124,7 @@ dependencies = [
 [[package]]
 name = "trade8-client"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "anyhow",
  "futures-util",
@@ -6142,7 +6142,7 @@ dependencies = [
 [[package]]
 name = "trade8-contracts"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "chrono",
  "serde",
@@ -6155,7 +6155,7 @@ dependencies = [
 [[package]]
 name = "trade8-feed-adapters"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "anyhow",
  "serde",
@@ -6170,7 +6170,7 @@ dependencies = [
 [[package]]
 name = "trade8-fix"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "chrono",
  "serde",
@@ -6180,7 +6180,7 @@ dependencies = [
 [[package]]
 name = "trade8-fixed"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "serde",
  "utoipa",
@@ -6189,7 +6189,7 @@ dependencies = [
 [[package]]
 name = "trade8-ouch"
 version = "0.1.0"
-source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v0.5.8#a24df6c3e42658a701ff56bdc27eb93132662ba1"
+source = "git+https://github.com/Trade8-dev/trade8-sdk?tag=trade8-v1.0.0#738b5d8f9e2412250da7acdf6998fa87bfc448e9"
 dependencies = [
  "thiserror 1.0.69",
 ]

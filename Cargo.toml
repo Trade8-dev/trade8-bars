@@ -22,7 +22,7 @@ path = "src/main.rs"
 sentin8 = { git = "https://github.com/Sentin8/sentin8-sdk", tag = "sdk-v1.0.0" }
 utoipa = { version = "5", features = ["chrono", "uuid"] }
 # trade8 namespace facade pin - carries this vertical's contracts/clients.
-trade8 = { git = "https://github.com/Trade8-dev/trade8-sdk", tag = "trade8-v0.5.8" }
+trade8 = { git = "https://github.com/Trade8-dev/trade8-sdk", tag = "trade8-v1.0.0" }
 
 anyhow = "1"
 axum = { version = "0.8", features = ["macros"] }
