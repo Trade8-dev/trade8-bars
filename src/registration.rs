@@ -8,7 +8,6 @@
 //! Output via `--print-registration`. Scopes per master design §9; pages
 //! per bars design §8.
 
-use utoipa::OpenApi;
 
 use sentin8::registration::{
     AdminScope, AdminUi, AdminUiPage, ErrorCode, M2mGrant, PgRole, PolicySetDecl, Registration,
@@ -177,6 +176,14 @@ const SQL_1_INIT: &str = include_str!("../sql/init.sql");
 
 
 pub fn print(section: Option<String>) -> anyhow::Result<()> {
+        // The utoipa dump is a binary-crate static (main.rs): test harnesses
+    // embedding this file carry neither the static nor the openapi module
+    // and never print a spec.
+    #[cfg(not(test))]
+    let dump: fn() -> serde_json::Value = crate::OPENAPI_DUMP;
+    #[cfg(test)]
+    let dump: fn() -> serde_json::Value = || serde_json::Value::Null;
+
     let reg = Registration {
         service_type: "trade8:bars",
         subdomain: "trade8-bars",
@@ -201,11 +208,11 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
         service_actions: None,
         m2m_grants: Some(M2M_GRANTS),
         openapi_url: "/openapi.json",
-        openapi: crate::OPENAPI_DUMP,
+        openapi: dump,
         policies: POLICIES,
         relations: RELATIONS,
         event_triggers: &[],
         schedules: &[],
     };
-    sentin8::registration::print_registration(section, &reg, crate::OPENAPI_DUMP)
+    sentin8::registration::print_registration(section, &reg, dump)
 }
