@@ -6,7 +6,8 @@
       "telemetry_property": {
         "slug": "bars",
         "name": "Trade8:Bars Telemetry"
-      }
+      },
+      "exposure": "internal"
     }
   ]
 }
